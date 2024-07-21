@@ -1,0 +1,36 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ds-syslog
+  namespace: 2-1
+  labels:
+    app: ds-syslog
+spec:
+  selector:
+    matchLabels:
+      app: ds-syslog
+  template:
+    metadata:
+      labels:
+        app: ds-syslog
+    spec:
+      containers:
+        - name: multitool
+          image: wbitt/network-multitool:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: HTTP_PORT
+              value: "8080"
+          ports:
+            - containerPort: 8080
+              name: http-port
+          volumeMounts:
+            - name: syslog
+              mountPath: /nodelogs/syslog
+              readOnly: true
+      volumes:
+        - name: syslog
+          hostPath:
+            path: /var/log/syslog
+            type: File
