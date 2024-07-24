@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apps-deployment
+  namespace: 2-2
+  labels:
+    app: apps-deployment-nfs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apps-deployment-nfs
+  template:
+    metadata:
+      labels:
+        app: apps-deployment-nfs
+    spec:
+      volumes:
+        - name: vol-nfs
+          persistentVolumeClaim:
+            claimName: pvc-nfs
+      containers:
+        - name: multitool
+          image: wbitt/network-multitool:latest
+          env:
+            - name: HTTP_PORT
+              value: "8080"
+          ports:
+            - containerPort: 8080
+              name: http-port
+          volumeMounts:
+            - name: vol-nfs
+              mountPath: /input
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: 2-2
+  name: pvc-nfs
+spec:
+  storageClassName: nfs-csi
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 5Gi
