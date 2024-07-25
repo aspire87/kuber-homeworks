@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: 2-3
+  labels:
+    app: nginxapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginxapp
+  template:
+    metadata:
+      labels:
+        app: nginxapp
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+          - containerPort: 80
+        volumeMounts:
+          - name: nginx-config
+            mountPath: /usr/share/nginx/html
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-cm
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-cm
+  namespace: 2-3
+data:
+  index.html: |
+    <html>
+    <h1>Welcome from hell!!!</h1>
+    </html>
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: 2-3
+  name: nginx-svc
+spec:
+  ports:
+    - name: nginx
+      protocol: TCP
+      port: 443
+      targetPort: 80  
+  selector:
+    app: nginxapp
+
+---
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUREVENDQWZXZ0F3SUJBZ0lVTWVsZlJrZE1NQUpwb0hCeVhINjdSU1ZSMkxBd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0ZqRVVNQklHQTFVRUF3d0xhM1ZpWlhJdGFIY3VjblV3SGhjTk1qUXdOekkxTURjME9UUTVXaGNOTWpVdwpOekkxTURjME9UUTVXakFXTVJRd0VnWURWUVFEREF0cmRXSmxjaTFvZHk1eWRUQ0NBU0l3RFFZSktvWklodmNOCkFRRUJCUUFEZ2dFUEFEQ0NBUW9DZ2dFQkFKZ1RYd3NMQWV5SHdaLzYwbHBKNG9wR1hFaWlESEtpbE5yLzVnMDEKZVJNR1JKend4SDJiNVRMWWQ1eElUdFdseGFOSnZNdjBIaHNCQVMrOFAyd3gydmY3Sm84K1AwVjd1UmRvNlUydwpsNURneFhwM3RLQ1QvYnRoRlZyVFg5dWlXS3VSeW4zaFNUcy9SMDBSbnNCTjBBdk4yV081N3BpWDh4dHhzRTBRClJDMnE5OHkveGJCbWp5ZkZ2ZC9VMXh0Nm1FNGtnNFg1UUttQWF1aTFNdVkxVUtkYTFGcmlKUnFkQUtLUlhBOHYKY3hsU2MzVmo3aWZLT3BoM2x4UDhzOUdkcFRURE8yZHRLYjkxMDRaR21OWEN3Mi9xUCtXc1lITzdpU3BEMnA2TQpyVjlVYzRwVmxjNW9teTQ0MTNESzdRcS9MNGRsTVJ1NHRNdHpvOTVFaitZdzNhRUNBd0VBQWFOVE1GRXdIUVlEClZSME9CQllFRklGRVBzL2F4VkczWWpVWkdFNWJUcEs1aDN6SE1COEdBMVVkSXdRWU1CYUFGSUZFUHMvYXhWRzMKWWpVWkdFNWJUcEs1aDN6SE1BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQgpBSDhwaGlTNFJkZVNWWDBZMlp1QzNLY1RBUlBDTDFMSVN4cUpsOGUyR3J6U2RlZncrWC9oYUEwSHora2RVWVphCnB0b1hTTzBCZ0VJdW8vaHpFQW5RM0JCRSsyYm5IZlZhbUF1d3U4SjZCSStDYTlSQ0VQQ1UzdEdtQzJUbURIcFkKYzJiWDNuT1p4YVZHZ0tGWVkwcEtoSG4rQ0RZMnZXMk9EamlsODNOMFZIMVNITEVqMHFHQmJFWC9YN2ovait2MApRL1pZTEdreU1yTGl2R1hrOW42YzBsVkhLUlRnVDdUeWo2aEd0UkFWUEtJeEhNdXZmRC9lVWVtcVNzRzhzUlZ6ClorUzhIWFhud1dXZ3NwWHZlQWF2OXF1d0VKS3JSL3hZckdlWE8zYU9Td3pudVlJTUFOYVNMVmROTnU3SmVLS0UKUlkwS2R3UWpPR0h3NnF4MlB0bE9VN289Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+    tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2Z0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktnd2dnU2tBZ0VBQW9JQkFRQ1lFMThMQ3dIc2g4R2YKK3RKYVNlS0tSbHhJb2d4eW9wVGEvK1lOTlhrVEJrU2M4TVI5bStVeTJIZWNTRTdWcGNXalNiekw5QjRiQVFFdgp2RDlzTWRyMyt5YVBQajlGZTdrWGFPbE5zSmVRNE1WNmQ3U2drLzI3WVJWYTAxL2JvbGlya2NwOTRVazdQMGROCkVaN0FUZEFMemRsanVlNllsL01iY2JCTkVFUXRxdmZNdjhXd1pvOG54YjNmMU5jYmVwaE9KSU9GK1VDcGdHcm8KdFRMbU5WQ25XdFJhNGlVYW5RQ2lrVndQTDNNWlVuTjFZKzRueWpxWWQ1Y1QvTFBSbmFVMHd6dG5iU20vZGRPRwpScGpWd3NOdjZqL2xyR0J6dTRrcVE5cWVqSzFmVkhPS1ZaWE9hSnN1T05kd3l1MEt2eStIWlRFYnVMVExjNlBlClJJL21NTjJoQWdNQkFBRUNnZ0VBQWNoZVdacUtMZnZrYXV2dGlkWHFaQzBSZVY5Kzdsd1dDeUFyVWZYUndzV1UKeWRNdnRubzhuRlU1eDdqNFJaeGhIZm9vRHFzQXJGZmRhL0lVdXorMVhhbFJ5U1dWWjhyY3YxZkJQbUltMExHMQoxdXJ1ME9BVFBoNVQrZ0hXMHBRTFhvMkJ0bXFNNlhjakxwWFppczhPdElpMzl1bVAwTFdkU2JIU080RUlqNUY0CkhUaFY0d0RPZkZkVExnd2Vxc3lXTDJzOWRLazJZNnpMdnBYRnRtTXVISWNPcmVMaVVudjVxaVp5MWp5T1B1TTUKNWlscTI4cFJxWk1PbCsvKzNMK3JuK2hkK2RaVnFZUUx2MjFEUTFVYVdvekFNamlXb3VwejFiTEt6bzluMUcwcgpiSUdhbUZ4Mnl3ZElUZURsbGZlU3BDaUpia3BXa2dneW5RelhlcXBRN1FLQmdRRFVYcXZmOXc2QTFMZXFZUzhOCkR5RFNkVVZXWC9Nd2diYTZ6NGp5Z0NBaWR4TGhIZ2s0Nks0YzlhaGZLekFaVHpqUEhpOXhBK0tVOTgraWZqblgKa2x3RG5Ldlo4OFRpd1JneHZrOS9NeGhDdEpWOXI3YTluZzBsVStTUUoxd3hzSzRFeWRsNU9PU2IrS2pwNXhMdwpvUkJ6MFNQRzI0UzNaclhVV1lYaW51VzRiUUtCZ1FDM1VacVJZM2xoMU5OcjdOaGVNWlpYZHUyMm93S2hlcDJsClR1WlhnVEZyN3I4Q1Zid2N6bk1oUjcwVy9MRWgwNXRCRTdSd3ZlRC9qT3cxNWg4Njk5b2ZzWlgyS3lrbStIY0oKTEZpQlVlZFdjZEg0SG9uMytPUGZWSW54SUpBOUY0aG9zZnIwQm9yY0k4cjI1ZDhtM0d6Mzh0ZldHMHJIWHZ5OQoyN3RBWlJvaGhRS0JnUUNmTjNNSWNJTVJGMm16ZFRUL1IyNUdHdUduQmp5ZkMwRGlBYUljbk81NnFHY2hHNUd5CmRzL0NxbkpYRjF2eVBiRExwMGZPSlNtRW9kMnJaNU1hQ1lLdXVwRWswRnUxM1NxMGNJZk5SNU5TdjJ5c1ZFWmYKRnRXb1BLTkphQmo0c0F0blQ2V1orb3Q2WEF6WGdBUjFIMnZrU05IWHp0QkxaOWUrb25kOEZjRUlhUUtCZ0hDTQoxSmFBK1d4Y1M3WU9nMFZKc3FGZXJsSWN3U2U5Ylg2cDgzZzBKTkM4azE5dW5nRWRxOGY2RUpsRmFjZDM4UEZDCmxOMUhaeFhmUXNOUTEwblFGSWF5OUh4Z1FYTGd4OHpGQWszYnFHb0ZsY0Y5bG4yOXZNSklXQ3pJTG1hanhTZHEKWnNaZUlmRkl0SHRqNU44cUpHa1RHdnNrWklRRnlLMFVkR0h6OE5nMUFvR0JBSmlwU21vOVNvejBEck56akVXNgphNWErMHViZ01qMmN0QmlRQlRxZVdFRzZCTnVzQXp0VEdZejArbUJEQ1c0OHpOOUlha0dqMUNvTmNpblVtYnk1Ckh0M0FDZWhROGphVjZ5WWFXN0s5K093WGV2a3MyUkJHTU5aNTY4MS9YSWgxVkJBNUdsTmdOeEY4TE4wKzBFQTQKWWlVd3l0cFdMQXZITmpDZGR4TjBONHU0Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+  kind: Secret
+  metadata:
+    creationTimestamp: "2024-07-25T08:00:53Z"
+    name: nginx-tls
+    namespace: 2-3
+    resourceVersion: "181910"
+    uid: 6d89ee6c-c844-414a-bee7-8b36f64f6e85
+  type: kubernetes.io/tls
+kind: List
+metadata:
+  resourceVersion: ""
+
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  namespace: 2-3
+  labels:
+    name: main-ingess
+spec:
+  tls:
+    - hosts:
+        - kuber-hw.ru
+      secretName: nginx-tls
+  rules:
+    - host: kuber-hw.ru
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: nginx-svc
+                port:
+                  number: 443
